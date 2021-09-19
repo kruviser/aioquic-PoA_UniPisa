@@ -406,7 +406,30 @@ if __name__ == "__main__":
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="increase logging verbosity"
     )
+    #PERF EV AUTOMATION V2******
+    parser.add_argument(
+        "--migration_type",
+        type=int,
+        help="Type of container migration for the server: 0 = cold, 1 = pre-copy, 2 = post-copy, 3 = hybrid",
+    )
+    #PERF EV AUTOMATION V2******
+
     args = parser.parse_args()
+
+
+    #PERF EV AUTOMATION V2******
+    if args.migration_type is None:
+        print("You have to insert the type of container migration")
+        sys.exit()
+    if args.migration_type < 0 or args.migration_type > 3:
+        print("You have to insert the correct type of container migration: 0 = cold, 1 = pre-copy, 2 = post-copy, 3 = hybrid")
+        sys.exit()
+
+    #DEBUG V3****       #FOR NOW FIRST ADDRESS SHOULD BE THE ONE TO WHICH SERVER WILL MIGRATE
+    f = open("home/Pool_v2/src/aioquic/quic/MigrationInformation.txt", "a") #CHANGE PATH #/home/Pool_v2/
+    f.write(str(args.migration_type)+"\n")
+    f.close()
+    #PERF EV AUTOMATION V2****** #DEBUG V3*****
 
     logging.basicConfig(
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
@@ -459,10 +482,10 @@ if __name__ == "__main__":
     )
 
     #DEBUG2 TEST*******************     DA SPOSTARE DA QUALCHE PARTE A PIù BASSO LIVELLO
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    print(f"Hostname: {hostname}")
-    print(f"IP Address: {ip_address}")
+    # hostname = socket.gethostname()
+    # ip_address = socket.gethostbyname(hostname)
+    # print(f"Hostname: {hostname}")
+    # print(f"IP Address: {ip_address}")
     #DEBUG2 TEST*******************
 
     try:

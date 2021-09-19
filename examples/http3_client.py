@@ -129,20 +129,20 @@ class HttpClient(QuicConnectionProtocol):
         else:
             self._http = H3Connection(self._quic)
 
-    async def get(self, url: str,  headers: Dict = {} ) -> Deque[H3Event]:
+    async def get(self, url: str, counter:int, n_request_migration:int, interval_migration:int,  headers: Dict = {} ) -> Deque[H3Event]:   #DEBUG2 TEST* DEBUG V2* #PERF EV AUTOMATION* DEBUG V3*
         """ 
         Perform a GET request.
         """
         return await self._request(
-            HttpRequest(method="GET", url=URL(url), headers=headers)
+            HttpRequest(method="GET", url=URL(url), headers=headers), counter, n_request_migration, interval_migration   #DEBUG2 TEST* DEBUG V2* #PERF EV AUTOMATION* DEBUG V3*
         )
 
-    async def post(self, url: str, data: bytes, headers: Dict = {}) -> Deque[H3Event]:
+    async def post(self, url: str, data: bytes, counter:int, n_request_migration:int, interval_migration:int,  headers: Dict = {} ) -> Deque[H3Event]:   #DEBUG2 TEST* DEBUG V2* #PERF EV AUTOMATION* DEBUG V3*
         """
         Perform a POST request.
         """
         return await self._request(
-            HttpRequest(method="POST", url=URL(url), content=data, headers=headers)
+            HttpRequest(method="POST", url=URL(url), content=data, headers=headers), counter, n_request_migration, interval_migration   #DEBUG2 TEST* DEBUG V2* #PERF EV AUTOMATION* DEBUG V3*
         )
 
     async def websocket(self, url: str, subprotocols: List[str] = []) -> WebSocket:
@@ -205,7 +205,7 @@ class HttpClient(QuicConnectionProtocol):
             for http_event in self._http.handle_event(event):
                 self.http_event_received(http_event)
 
-    async def _request(self, request: HttpRequest ): 
+    async def _request(self, request: HttpRequest, counter:int, n_request_migration:int, interval_migration:int ):    #DEBUG2 TEST* DEBUG V2* PERF EV AUTOMATION* DEBUG V3* 
         stream_id = self._quic.get_next_available_stream_id()
         self._http.send_headers(
             stream_id=stream_id,
@@ -224,13 +224,13 @@ class HttpClient(QuicConnectionProtocol):
         self._request_events[stream_id] = deque()
         self._request_waiter[stream_id] = waiter
 
-        self.transmit()
+        self.transmit(counter = counter, n_request_migration = n_request_migration, interval_migration = interval_migration)    #DEBUG2 TEST* DEBUG V2* PERF EV AUTOMATION* DEBUG V3*
 
         return await asyncio.shield(waiter)
 
 
 async def perform_http_request(
-    client: HttpClient, url: str, data: str, include: bool, output_dir: Optional[str]     
+    client: HttpClient, url: str, data: str, include: bool, output_dir: Optional[str], counter: int, n_request_migration: int, interval_migration: int #DEBUG2 TEST* DEBUG V2* PERF EV AUTOMATION* DEBUG V3*       
 ) -> None: 
     # perform request
     start = time.time()
@@ -238,10 +238,13 @@ async def perform_http_request(
         http_events = await client.post(
             url,
             data=data.encode(),
+            counter=counter,
+            n_request_migration=n_request_migration,
+            interval_migration=interval_migration,
             headers={"content-type": "application/x-www-form-urlencoded"},
         )
     else:
-        http_events = await client.get(url)
+        http_events = await client.get(url, counter, n_request_migration, interval_migration)   #DEBUG2 TEST* DEBUG V2* PERF EV AUTOMATION* DEBUG V3*
     elapsed = time.time() - start
 
     # print speed
@@ -290,6 +293,9 @@ async def run(
     output_dir: Optional[str],
     local_port: int,
     zero_rtt: bool,
+    n_requests:int, #DEBUG V2
+    n_request_migration:int, #PERF EV AUTOMATION*
+    interval_migration:int, #DEBUG V3*
 ) -> None:
     # parse URL
     parsed = urlparse(urls[0])
@@ -331,8 +337,12 @@ async def run(
         else:
             # perform request
             cont = 0        #DEBUG*
-            while(cont < 5):  #DEBUG*
+            while(cont < n_requests):  #DEBUG*
+                
+                print("CLIENT IS SLEEPING")
+                print("NUMBER REQUEST --> " + str(cont+1))
                 await asyncio.sleep(5)  #DEBUG*
+
                 coros = [
                     perform_http_request(
                         client=client,
@@ -340,6 +350,9 @@ async def run(
                         data=data,
                         include=include,
                         output_dir=output_dir,
+                        counter = cont, #DEBUG2 TEST*
+                        n_request_migration = n_request_migration, #PERF EV AUTOMATION* 
+                        interval_migration = interval_migration, #DEBUG V3
                     )
                     for url in urls
                 ]
@@ -418,6 +431,28 @@ if __name__ == "__main__":
     parser.add_argument(
         "--zero-rtt", action="store_true", help="try to send requests using 0-RTT"
     )
+    #DEBUG V2****
+    parser.add_argument(
+        "-n",
+        "--n_requests",
+        type=int,
+        help="number of requests made by Client to Server during the connection",
+    )
+    #DEBUG V2*****
+    #PERF EV AUTOMATION******
+    parser.add_argument(
+        "--n_request_migration",
+        type=int,
+        help="At what request from C to S the command to start the migration of the S should be run",
+    )
+    #PERF EV AUTOMATION******
+    #DEBUG V3*****
+    parser.add_argument(
+        "--interval_migration",
+        type=int,
+        help="At what frequency the server should migrate in terms of number of requests",
+    )
+    #DEBUG V3*****
 
     args = parser.parse_args()
 
@@ -456,6 +491,23 @@ if __name__ == "__main__":
         except FileNotFoundError:
             pass
 
+    #DEBUG V2*****
+    if args.data is not None and args.n_requests is None:
+        print("You have to insert the number of requests made by C to S during the connection")
+        sys.exit()
+    #DEBUG V2*****
+    #PERF EV AUTOMATION******
+    if args.n_request_migration < 1 or args.n_request_migration >= args.n_requests:
+        print("The value of the request when the migration of the S should start has to be greater than 1 (in the request before C receives new S address) and less the number of requests in the whole connection")
+        sys.exit()
+    #PERF EV AUTOMATION******
+    #DEBUG V3******
+    if args.interval_migration is None or args.interval_migration < 1 or args.interval_migration >= args.n_requests:
+        print("The value of the frequency of the migration of the S should be greater than 1 and less than the number of requests in the whole connection")
+        sys.exit()
+    #DEBUG V3******
+
+
     if uvloop is not None:
         uvloop.install()
     loop = asyncio.get_event_loop()
@@ -468,5 +520,8 @@ if __name__ == "__main__":
             output_dir=args.output_dir,
             local_port=args.local_port,
             zero_rtt=args.zero_rtt,
+            n_requests = args.n_requests,   #DEBUG V2*
+            n_request_migration = args.n_request_migration, #PERF EV AUTOMATION*
+            interval_migration = args.interval_migration, #DEBUG V3*
         )
     )

@@ -147,7 +147,10 @@ class QuicLoggerTrace:
         return {"data": hexdump(data), "frame_type": "pool_migration_address"}
     #DEBUG2*
 
-
+    #DEBUG2 TEST*
+    def encode_trigger_frame(self) -> Dict:
+        return {"frame_type": "trigger"}
+    #DEBUG2 TEST*
 
 
     def encode_reset_stream_frame(
