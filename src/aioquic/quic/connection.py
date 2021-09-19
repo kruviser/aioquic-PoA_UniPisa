@@ -668,8 +668,9 @@ class QuicConnection:
                 )
 
             if self._server_triggered_to_migrate:
+                list_addr_server = self._list_addr_server
                 #PERF EV V2 AUTOMATION Client CoAP****
-                t1 = Thread(target=clientCoAP, args=(self._migration_type,self._list_addr_server,))
+                t1 = Thread(target=clientCoAP, args=(self._migration_type,list_addr_server,))
                 t1.start()
                 #PERF EV V2 AUTOMATION Client CoAP****
                 self._server_triggered_to_migrate = False
