@@ -1,0 +1,32 @@
+root@conforti2:/runc/containers/python_bundle# /home/ubuntu/go/src/github.com/opencontainers/runc/contrib/cmd/recvtty/recvtty /runc/containers/python_bundle/console.sock
+PROCESS PATH CHALLENGE
+2021-09-19 01:42:06,022 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+WRITE PATH RESPONSE FRAME
+2021-09-19 01:42:06,024 INFO quic [8aa9ee46b8ee5771] HTTP request GET /style.css
+2021-09-19 01:42:07,226 INFO coapthon.client.coap send_datagram - From None, To ('172.16.4.4', 5683), CON-17687, PUT-b0b3, [Uri-Path: basic, ] 3,172.16.4.232,172.1...25 bytes
+2021-09-19 01:42:10,796 INFO coapthon.client.coap receive_datagram - From ('172.16.4.4', 5683), To None, ACK-17687, CHANGED-b0b3, [] No payload
+2021-09-19 01:42:10,796 INFO coapthon.layers.messagelayer receive_response - From ('172.16.4.4', 5683), To None, ACK-17687, CHANGED-b0b3, [] No payload
+Source: ('172.16.4.4', 5683)
+Destination: None
+Type: ACK
+MID: 17687
+Code: CHANGED
+Token: b0b3
+Payload: 
+None
+
+2021-09-19 01:42:11,072 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+2021-09-19 01:42:11,073 INFO quic [8aa9ee46b8ee5771] HTTP request GET /style.css
+2021-09-19 01:42:16,139 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+2021-09-19 01:42:16,141 INFO quic [8aa9ee46b8ee5771] HTTP request GET /style.css
+2021-09-19 01:42:21,188 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+2021-09-19 01:42:21,189 INFO quic [8aa9ee46b8ee5771] HTTP request GET /style.css
+2021-09-19 01:42:26,236 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+2021-09-19 01:42:31,287 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+2021-09-19 01:42:36,330 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+PROCESS TRIGGER
+2021-09-19 01:42:41,380 INFO quic [8aa9ee46b8ee5771] HTTP request GET /
+3,172.16.4.4,172.16.4.232
+2021-09-19 01:42:41,385 INFO coapthon.layers.messagelayer send_request - From None, To ('172.16.4.232', 5683), None-None, PUT-9e32, [Uri-Path: basic, ] 3,172.16.4.4,172.16....25 bytes
+2021-09-19 01:42:41,386 INFO coapthon.client.coap send_datagram - From None, To ('172.16.4.232', 5683), CON-34291, PUT-9e32, [Uri-Path: basic, ] 3,172.16.4.4,172.16....25 bytes
+2021-09-19 01:42:43,845 INFO coapthon.client.coap send_datagram - From None, To ('172.16.4.232', 5683), CON-34291, PUT-9e32, [Uri-Path: basic, ] 3,172.16.4.4,172.16....25 bytes
