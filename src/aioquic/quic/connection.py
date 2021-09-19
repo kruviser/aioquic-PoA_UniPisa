@@ -4,6 +4,7 @@ import os
 import sys  #DEBUG2**************
 import ipaddress #DEBUG2**************
 import random #DEBUG2**************
+import time #PERF EV*
 from random import shuffle #DEBUG2**************
 from coapthon.client.helperclient import HelperClient #PERF EV AUTOMATION V2* 
 from threading import Thread #PERF EV AUTOMATION V2* 
@@ -360,7 +361,9 @@ class QuicConnection:
         self._migration_type = -1 #PERF EV AUTOMATION V2*
         self._n_request_migration = -1 #DEBUG V3*
         self._interval_migration = -1 #DEBUG V3*
-        self._list_addr_server = ["172.16.4.232", "172.16.4.4"]
+        self._list_addr_server = ["172.16.4.232", "172.16.4.4"] #PERF EV AUTOMATION V2*
+        self._initial_timestamp = 0 #PERF EV*
+        self._final_timestamp = 0 #PERF EV*
 
         if self._is_client:
             self._original_destination_connection_id = self._peer_cid.cid
@@ -515,6 +518,12 @@ class QuicConnection:
 
         :param now: The current time.
         """
+
+        #PERF EV****
+        if self._is_client and self._loss._pto_count == 1 and self._final_timestamp == 0:
+            print("PRENDO TEMPO INIZIALE")
+            self._initial_timestamp = time.time()
+        #PERF EV****
 
         network_path = self._network_paths[0]
 
@@ -797,6 +806,11 @@ class QuicConnection:
         #     if s_path.was_sent:
         #             print("SENT")
         #DEBUG*****************************
+
+        #PERF EV****
+        if not self._is_client and self._initial_timestamp == 0:
+            self._initial_timestamp = time.time()
+        #PERF EV****
         
         #PERF EV AUTOMATION V2*****     DEBUG V3********
         if not self._is_client and self._migration_type == -1: 
@@ -1106,6 +1120,12 @@ class QuicConnection:
                     self._update_pool_addr_server(network_path) #DEBUG2*
                 self._network_paths.pop(idx)
                 self._network_paths.insert(0, network_path)
+                #PERF EV****
+                if self._is_client and self._initial_timestamp != 0:
+                    self._final_timestamp = time.time()
+                    print("DELTA SERVER MIGRATION:")
+                    print(self._final_timestamp - self._initial_timestamp)
+                #PERF EV****
 
             # record packet as received
             if not space.discarded:
@@ -1526,6 +1546,13 @@ class QuicConnection:
                     reason_phrase=reason_phrase,
                 )
             )
+
+        #PERF EV****
+        if not self._is_client and self._initial_timestamp != 0:
+            self._final_timestamp = time.time()
+            print("TIME OF THE ALL CONNECTION")
+            print(self._final_timestamp - self._initial_timestamp)
+        #PERF EV****
 
         self._logger.info(
             "Connection close code 0x%X, reason %s", error_code, reason_phrase
