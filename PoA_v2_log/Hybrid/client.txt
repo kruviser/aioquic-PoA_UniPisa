@@ -1,0 +1,70 @@
+MacBook:Aioquic-PoA-Git lucaconforti$ python3 examples/http3_client.py --ca-certs tests/pycacert.pem --n_requests 15 --n_request_migration 3 --interval_migration 8 https://172.16.4.4:4433/
+2021-09-19 03:41:40,067 INFO quic [8aa9ee46b8ee5771] ALPN negotiated protocol h3-29
+2021-09-19 03:41:40,068 INFO client New session ticket received
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 1
+PROCESS POOL SERVER MIGRATION ADDRESS
+IP ADDRESS RECEIVED:
+172.16.4.232
+PROCESS POOL SERVER MIGRATION ADDRESS
+IP ADDRESS RECEIVED:
+172.16.4.93
+2021-09-19 03:41:45,117 INFO client Received 1068 bytes in 0.0 s (0.184 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 2
+2021-09-19 03:41:50,168 INFO client Received 1068 bytes in 0.0 s (0.175 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 3
+2021-09-19 03:41:55,215 INFO client Received 1068 bytes in 0.0 s (0.195 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 4
+WRITE TRIGGER FRAME
+2021-09-19 03:42:00,265 INFO client Received 1068 bytes in 0.0 s (0.178 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 5
+1
+Probe a possible server address:
+('::ffff:172.16.4.4', 4433, 0, 0)
+2
+Probe a possible server address:
+('::ffff:172.16.4.93', 4433, 0, 0)
+3
+Probe a possible server address:
+('::ffff:172.16.4.232', 4433, 0, 0)
+WRITE PATH CHALLENGE FRAME
+PROCESS PATH RESPONSE
+2021-09-19 03:42:05,958 INFO client Received 1068 bytes in 0.7 s (0.012 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 6
+2021-09-19 03:42:11,030 INFO client Received 1068 bytes in 0.1 s (0.124 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 7
+2021-09-19 03:42:16,074 INFO client Received 1068 bytes in 0.0 s (0.204 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 8
+2021-09-19 03:42:21,124 INFO client Received 1068 bytes in 0.0 s (0.183 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 9
+2021-09-19 03:42:26,173 INFO client Received 1068 bytes in 0.0 s (0.194 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 10
+2021-09-19 03:42:31,222 INFO client Received 1068 bytes in 0.0 s (0.179 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 11
+2021-09-19 03:42:36,269 INFO client Received 1068 bytes in 0.0 s (0.193 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 12
+WRITE TRIGGER FRAME
+2021-09-19 03:42:41,319 INFO client Received 1068 bytes in 0.0 s (0.177 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 13
+1
+Probe a possible server address:
+('::ffff:172.16.4.4', 4433, 0, 0)
+2021-09-19 03:42:46,517 INFO client Received 1068 bytes in 0.2 s (0.044 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 14
+2021-09-19 03:42:51,563 INFO client Received 1068 bytes in 0.0 s (0.202 Mbps)
+CLIENT IS SLEEPING
+NUMBER REQUEST --> 15
+2021-09-19 03:42:56,612 INFO client Received 1068 bytes in 0.0 s (0.190 Mbps)
