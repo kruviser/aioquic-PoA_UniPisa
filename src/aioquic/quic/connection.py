@@ -6,7 +6,7 @@ import ipaddress #DEBUG2**************
 import random #DEBUG2**************
 import time #PERF EV*
 from random import shuffle #DEBUG2**************
-from coapthon.client.helperclient import HelperClient #PERF EV AUTOMATION V2* 
+#from coapthon.client.helperclient import HelperClient #PERF EV AUTOMATION V2* 
 from threading import Thread #PERF EV AUTOMATION V2* 
 from collections import deque
 from dataclasses import dataclass
@@ -218,16 +218,16 @@ END_STATES = frozenset(
 
 
 #PERF EV V2 AUTOMATION Client CoAP****
-def clientCoAP(mtype: int, list_addr_server) -> None:
-
-    client = HelperClient(server=(list_addr_server[1],5683))
-    request = str(mtype) + ","+str(list_addr_server[0])+","+str(list_addr_server[1])
-    print(request)
-    
-    response = client.put("basic",request)
-    print(response.pretty_print())
-    
-    client.stop()
+#def clientCoAP(mtype: int, list_addr_server) -> None:
+#
+#    client = HelperClient(server=(list_addr_server[1],5683))
+#    request = str(mtype) + ","+str(list_addr_server[0])+","+str(list_addr_server[1])
+#    print(request)
+#    
+#    response = client.put("basic",request)
+#    print(response.pretty_print())
+#    
+#    client.stop()
 
 #PERF EV V2 AUTOMATION Client CoAP*****
 
@@ -521,8 +521,8 @@ class QuicConnection:
 
         #PERF EV****
         if self._is_client and self._loss._pto_count == 1 and self._final_timestamp == 0:
-            print("PRENDO TEMPO INIZIALE")
             self._initial_timestamp = time.time()
+            print("TEMPO INIZIALE: " + str(self._initial_timestamp))
         #PERF EV****
 
         network_path = self._network_paths[0]
@@ -1963,7 +1963,8 @@ class QuicConnection:
         """
         data = buf.pull_bytes(8)
 
-        print("PROCESS PATH RESPONSE") #DEBUG*
+        now = time.time() #CARLO
+        print("Process PATH RESPONSE frame at: " + str(now)) #CARLO
 
         # log frame
         if self._quic_logger is not None:
@@ -2361,10 +2362,14 @@ class QuicConnection:
         Callback when a PING frame is acknowledged or lost.
         """
         if delivery == QuicDeliveryState.ACKED:
+            now = time.time() #CARLO
+            print("PING acked at: " + str(now)) #CARLO
             self._logger.debug("Received PING%s response", "" if uids else " (probe)")
             for uid in uids:
                 self._events.append(events.PingAcknowledged(uid=uid))
         else:
+            now = time.time() #CARLO
+            print("PING not acked at: " + str(now)) #CARLO
             self._ping_pending.extend(uids)
 
 
@@ -3179,7 +3184,8 @@ class QuicConnection:
         )
         buf.push_bytes(challenge)
 
-        print("WRITE PATH CHALLENGE FRAME") #DEBUG*
+        now = time.time() #CARLO
+        print("Write PATH CHALLENGE frame at: " + str(now)) #CARLO
 
         # log frame
         if self._quic_logger is not None:
@@ -3206,7 +3212,9 @@ class QuicConnection:
     def _write_ping_frame(
         self, builder: QuicPacketBuilder, uids: List[int] = [], comment=""
     ):
-        #print("WRITE PING FRAME") #DEBUG*
+        now = time.time() #CARLO
+        print("Write PING frame at: " + str(now)) #CARLO
+
         builder.start_frame(
             QuicFrameType.PING,
             capacity=PING_FRAME_CAPACITY,
@@ -3267,7 +3275,8 @@ class QuicConnection:
     def _write_trigger_frame(
         self, builder: QuicPacketBuilder
     ):
-        print("WRITE TRIGGER FRAME") #DEBUG2*
+        now = time.time() #CARLO
+        print("Write TRIGGER FRAME at: " + str(now)) #DEBUG2* CARLO
         
         builder.start_frame(
             QuicFrameType.TRIGGER,

@@ -233,11 +233,16 @@ async def perform_http_request(
     client: HttpClient, url: str, data: str, include: bool, output_dir: Optional[str], counter: int, n_request_migration: int, interval_migration: int #DEBUG2 TEST* DEBUG V2* PERF EV AUTOMATION* DEBUG V3*       
 ) -> None: 
     # perform request
+
+    if data is not None:
+        d = recover_data_from_path(data)
+
     start = time.time()
+    print("Performing a new HTTP request at: " + str(start))
     if data is not None:
         http_events = await client.post(
             url,
-            data=data.encode(),
+            data=d, #data=data.encode(),
             counter=counter,
             n_request_migration=n_request_migration,
             interval_migration=interval_migration,
@@ -253,7 +258,7 @@ async def perform_http_request(
         if isinstance(http_event, DataReceived):
             octets += len(http_event.data)
     logger.info(
-        "Received %d bytes in %.1f s (%.3f Mbps)"
+        "Received %d bytes in %.3f s (%.3f Mbps)"
         % (octets, elapsed, octets * 8 / elapsed / 1000000)
     )
 
@@ -296,6 +301,8 @@ async def run(
     n_requests:int, #DEBUG V2
     n_request_migration:int, #PERF EV AUTOMATION*
     interval_migration:int, #DEBUG V3*
+    request_type:int, #DEBUG V4*
+    request_interval:int, #DEBUG V4*
 ) -> None:
     # parse URL
     parsed = urlparse(urls[0])
@@ -337,11 +344,18 @@ async def run(
         else:
             # perform request
             cont = 0        #DEBUG*
+            diff_timestamp=0 #DEBUG V4*
             while(cont < n_requests):  #DEBUG*
                 
-                print("CLIENT IS SLEEPING")
                 print("NUMBER REQUEST --> " + str(cont+1))
-                await asyncio.sleep(5)  #DEBUG*
+
+                #DEBUG V4*****
+                if request_type == 1 and diff_timestamp!=0: 
+                    print("CLIENT IS SLEEPING")
+                    await asyncio.sleep(request_interval - diff_timestamp)  #DEBUG*
+
+                initial_timestamp = time.time() 
+                #DEBUG V4*****
 
                 coros = [
                     perform_http_request(
@@ -357,8 +371,18 @@ async def run(
                     for url in urls
                 ]
                 await asyncio.gather(*coros)
+                final_timestamp = time.time() #DEBUG V4*
+                diff_timestamp = final_timestamp - initial_timestamp #DEBUG V4*
                 cont+=1 #DEBUG*
 
+#CARLO ***** METHOD TO GET PAYLOAD FROM PATH
+
+def recover_data_from_path(path: str) -> bytes:
+    with open(path, "r") as f:
+        payload = str.encode(f.read())
+    return payload
+
+#CARLO ***** METHOD TO GET PAYLOAD FORM PATH
 
 if __name__ == "__main__":
     defaults = QuicConfiguration(is_client=True)
@@ -453,6 +477,18 @@ if __name__ == "__main__":
         help="At what frequency the server should migrate in terms of number of requests",
     )
     #DEBUG V3*****
+    #DEBUG V4*****
+    parser.add_argument(
+        "--request_type",
+        type=int,
+        help="Type of requests from the Client to the Server: 0 --> back to back, 1: interval between each requests",
+    )
+    parser.add_argument(
+        "--request_interval",
+        type=int,
+        help="Timeout between each request used if request type is different from 0",
+    )
+    #DEBUG V4*****
 
     args = parser.parse_args()
 
@@ -502,10 +538,23 @@ if __name__ == "__main__":
         sys.exit()
     #PERF EV AUTOMATION******
     #DEBUG V3******
-    if args.interval_migration is None or args.interval_migration < 1 or args.interval_migration >= args.n_requests:
-        print("The value of the frequency of the migration of the S should be greater than 1 and less than the number of requests in the whole connection")
+    #if args.interval_migration is None or args.interval_migration < 1 or args.interval_migration >= args.n_requests:
+    #    print("The value of the frequency of the migration of the S should be greater than 1 and less than the number of requests in the whole connection")
+    #    sys.exit()
+    if args.interval_migration is None or args.interval_migration < 1:
+        print("The value of the frequency of the migration is not correct")
         sys.exit()
     #DEBUG V3******
+    #DEBUG V4******
+    if args.request_type < 0 or args.request_type > 1:
+        print("The value of the type of the request has to be between 0 and 2")
+        sys.exit()
+    if args.request_interval is None:
+        args.request_interval = 0
+    if args.request_type != 0 and args.request_interval <= 0:
+        print("With this type of request, the interval between request has to be greater than 0")
+        sys.exit()
+    #DEBUG V4******
 
 
     if uvloop is not None:
@@ -523,5 +572,7 @@ if __name__ == "__main__":
             n_requests = args.n_requests,   #DEBUG V2*
             n_request_migration = args.n_request_migration, #PERF EV AUTOMATION*
             interval_migration = args.interval_migration, #DEBUG V3*
+            request_type = args.request_type, #DEBUG V4*
+            request_interval = args.request_interval, #DEBUG V4*
         )
     )
